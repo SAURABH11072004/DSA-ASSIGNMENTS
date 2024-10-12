@@ -12,11 +12,11 @@ private:
     float sgpa;   // Student's SGPA (Semester Grade Point Average)
 
 public:
-    // Method to set student data
-    void setData(int r, const string& n, float s) {
-        roll_no = r;  // Assign roll number
-        name = n;     // Assign name
-        sgpa = s;     // Assign SGPA
+    // Constructor to initialize student data
+    Student(int r = 0, const string& n = "", float s = 0.0) {
+        roll_no = r; // Set roll number
+        name = n;    // Set name
+        sgpa = s;    // Set SGPA
     }
 
     // Method to display student details
@@ -120,26 +120,27 @@ public:
 };
 
 int main() {
-    Student students[MAX_STUDENTS]; // Array to hold student objects
-    int choice; // Variable to store user's menu choice
-    int studentCount = 0; // Counter for the number of students added
+    // Initialize the array of Student objects with data
+    Student students[MAX_STUDENTS] = {
+        {200, "Saurabh", 9.2},
+        {201, "Nilesh", 8.7},
+        {202, "Ashwa", 8.9},
+        {203, "Nelay", 7.8},
+        {204, "Yash", 9.1},
+        {205, "Raj", 7.4},
+        {206, "Isha", 8.5},
+        {207, "Aniket", 7.6},
+        {208, "Gaurav", 9.4},
+        {209, "Pranav", 8.3},
+        {210, "Pratik", 9.0},
+        {211, "Mohit", 7.7},
+        {212, "Rakesh", 9.5},
+        {213, "Arjun", 7.2},
+        {214, "Devendra", 9.3}
+    };
 
-    // Adding students with roll numbers starting from 200
-    students[studentCount++].setData(200, "Saurabh", 9.2); // Add student 1
-    students[studentCount++].setData(201, "Nilesh", 8.7); // Add student 2
-    students[studentCount++].setData(202, "Ashwa", 8.9); // Add student 3
-    students[studentCount++].setData(203, "Nelay", 7.8); // Add student 4
-    students[studentCount++].setData(204, "Yash", 9.1); // Add student 5
-    students[studentCount++].setData(205, "Raj", 7.4); // Add student 6
-    students[studentCount++].setData(206, "Isha", 8.5); // Add student 7
-    students[studentCount++].setData(207, "Aniket", 7.6); // Add student 8
-    students[studentCount++].setData(208, "Gaurav", 9.4); // Add student 9
-    students[studentCount++].setData(209, "Pranav", 8.3); // Add student 10
-    students[studentCount++].setData(210, "Pratik", 9.0); // Add student 11
-    students[studentCount++].setData(211, "Mohit", 7.7); // Add student 12
-    students[studentCount++].setData(212, "Rakesh", 9.5); // Add student 13
-    students[studentCount++].setData(213, "Arjun", 7.2); // Add student 14
-    students[studentCount++].setData(214, "Devendra", 9.3); // Add student 15
+    int choice; // Variable to store user's menu choice
+    int studentCount = MAX_STUDENTS; // Counter for the number of students added
 
     // Menu-driven loop for user interaction
     do {
@@ -161,23 +162,28 @@ int main() {
                 break;
             case 2: // Case for sorting by roll numbers
                 students[0].insertionSortByRollNo(students, studentCount); // Sort students by roll number
-                cout << "Students sorted by Roll Numbers.\n"; // Confirmation message
+                cout << "Students sorted by Roll Numbers:\n"; // Confirmation message
+                for (int i = 0; i < studentCount; i++) {
+                    students[i].displayStudent(); // Display sorted students
+                }
                 break;
             case 3: // Case for sorting by names
                 students[0].shellSortByName(students, studentCount); // Sort students by name
-                cout << "Students sorted by Names.\n"; // Confirmation message
+                cout << "Students sorted by Names:\n"; // Confirmation message
+                for (int i = 0; i < studentCount; i++) {
+                    students[i].displayStudent(); // Display sorted students
+                }
                 break;
             case 4: // Case for displaying top 10 toppers
-                students[0].displayTopToppers(students, studentCount, 10); // Display top 10 students
+                students[0].displayTopToppers(students, studentCount, 10); // Display top 10 toppers
                 break;
-            case 5: // Case to exit the program
-                cout << "Exiting the program.\n"; // Exit message
+            case 5: // Case for exiting the program
+                cout << "Exiting program...\n"; // Exit message
                 break;
-            default: // Case for invalid choice
+            default: // Case for invalid input
                 cout << "Invalid choice. Please try again.\n"; // Error message
-                break;
         }
-    } while (choice != 5); // Repeat until the user chooses to exit
+    } while (choice != 5); // Continue until the user chooses to exit
 
-    return 0; // Return 0 to indicate successful program completion
+    return 0; // End of the program
 }
