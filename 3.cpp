@@ -17,7 +17,7 @@ public:
     // Method to get data for a song from the user
     void getdata() {
         cout << "Enter title name: ";
-        cin.ignore(); // Clear input buffer before getline
+       // Clear input buffer before getline
         getline(cin, title); // Read title, allowing spaces in the title
         cout << "Enter artist name: ";
         getline(cin, artist); // Read artist name, allowing spaces
@@ -26,16 +26,16 @@ public:
     }
 
     // Method to display the details of the song
-    void display() const {
+    void display()  {
         cout << "Title: " << title << endl;     // Print title
         cout << "Artist: " << artist << endl;   // Print artist
         cout << "Duration: " << duration << " minutes" << endl; // Print duration
     }
 
     // Accessor methods to get private member values
-    string getTitle() const { return title; }       // Get the title of the song
-    string getArtist() const { return artist; }     // Get the artist of the song
-    float getDuration() const { return duration; }   // Get the duration of the song
+    string getTitle()  { return title; }       // Get the title of the song
+    string getArtist()  { return artist; }     // Get the artist of the song
+    float getDuration() { return duration; }   // Get the duration of the song
 
     // Friend class declaration allows Playlist class to access private members
     friend class Playlist;
@@ -53,13 +53,13 @@ public:
     void addSong() {
         Song* newSong = new Song; // Create a new song instance
         newSong->getdata();       // Get the song's details from the user
-        newSong->next = nullptr;  // Initialize the next pointer to null
+       
 
         if (head == nullptr) {
             head = newSong; // If the playlist is empty, the new song is the head
         } else {
             Song* temp = head; // Temporary pointer to traverse the list
-            while (temp->next) {
+            while (temp->next!=NULL) {
                 temp = temp->next; // Traverse to the end of the list
             }
             temp->next = newSong; // Add the new song to the end of the list
@@ -68,7 +68,7 @@ public:
     }
 
     // Method to remove a song by title
-    void removeSong(const string& title) {
+    void removeSong(string& title) {
         if (head == nullptr) { // Check if the playlist is empty
             cout << "Playlist is empty." << endl;
             return; // Exit if the playlist is empty
@@ -88,12 +88,12 @@ public:
         Song* previous = nullptr; // Pointer to keep track of the previous song
 
         // Traverse the list to find the song to remove
-        while (current && current->getTitle() != title) {
+        while (current!=nullptr && current->getTitle() != title) {
             previous = current;      // Move previous to current
             current = current->next; // Move to the next song
         }
 
-        if (current) { // If the song was found
+        if (current!=nullptr) { // If the song was found
             previous->next = current->next;  // Remove the current song from the list
             delete current;                   // Free the removed song
             cout << "Song removed from playlist." << endl; // Confirmation message
@@ -103,7 +103,7 @@ public:
     }
 
     // Method to display all songs in the playlist
-    void displayPlaylist() const {
+    void displayPlaylist()  {
         if (head == nullptr) { // Check if the playlist is empty
             cout << "Playlist is empty." << endl;
             return; // Exit if the playlist is empty
@@ -111,7 +111,7 @@ public:
 
         cout << "--- Playlist ---" << endl; // Header for the playlist
         Song* temp = head; // Temporary pointer to traverse the list
-        while (temp) { // Loop through all songs
+        while (temp!=NULL) { // Loop through all songs
             temp->display();  // Display each song's details
             cout << "----------------" << endl; // Separator for clarity
             temp = temp->next; // Move to the next song
@@ -119,14 +119,14 @@ public:
     }
 
     // Method to play a specific song by title
-    void playSong(const string& title) const {
+    void playSong(string& title)  {
         if (head == nullptr) { // Check if the playlist is empty
             cout << "Playlist is empty." << endl;
             return; // Exit if the playlist is empty
         }
 
         Song* temp = head; // Temporary pointer to traverse the list
-        while (temp) { // Loop through all songs
+        while (temp!=nullptr) { // Loop through all songs
             if (temp->getTitle() == title) { // Check if the song title matches
                 cout << "Playing song: " << endl; // Indicate that the song is playing
                 temp->display();  // Display the song details
@@ -139,7 +139,7 @@ public:
 
     // Destructor to free allocated memory
     ~Playlist() {
-        while (head) { // Loop until all songs are deleted
+        while (head!=nullptr) { // Loop until all songs are deleted
             Song* temp = head; // Store the current head
             head = head->next; // Move head to the next song
             delete temp;  // Delete the old head
