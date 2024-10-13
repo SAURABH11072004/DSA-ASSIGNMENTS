@@ -13,21 +13,24 @@ public:
     Node* next; // Pointer to the next node
 
     // Constructor to initialize the node
-    Node() {  prev=nullptr;next=nullptr;}
+    Node() {
+        prev = nullptr;
+        next = nullptr;
+    }
 
     // Method to get the text data from user input
     void getData() {
         cout << "Enter text: ";
-        getline(cin,text); // Get a single word of text
+        getline(cin, text); // Get the entire line of text including spaces
     }
 
     // Method to display the text
-    void display()  {
+    void display() {
         cout << text; // Display the text content
     }
 
     // Method to get the text data
-    string getText()  {
+    string getText() {
         return text; // Return the text content
     }
 };
@@ -36,26 +39,118 @@ public:
 class TextEditor {
 private:
     Node* head; // Pointer to the head of the linked list
-    Node* tail; // Pointer to the tail of the linked list
 
-    // Function to display the complete text from the linked list with numbering
-    void displayText()  {
-        Node* current = head;
+public:
+    // Constructor
+    TextEditor() {
+        head = nullptr;
+    }
+
+    // Function to insert text
+    void insertText() {
+        Node* newNode = new Node; // Create a new node
+        newNode->getData();         // Get text input from user
+        if (head == nullptr) {      // If the list is empty
+            head = newNode;
+        } else {
+            Node* temp = head;
+            while (temp->next != nullptr) {
+                temp = temp->next;
+            }
+            temp->next = newNode;
+            newNode->prev = temp;
+        }
+        cout << "Inserted: " << newNode->getText() << endl;
+    }
+
+    // Function to display all text
+    void displayAllText() {
+        if (head == nullptr) {
+            cout << "No text" << endl;
+            return;
+        }
+        cout << "---- Text Editor ----" << endl;
+        Node* temp = head;
         int index = 1; // Initialize index for numbering
-        while (current != nullptr) {
+        while (temp != nullptr) {
             cout << "Text " << index << ": "; // Display the text number
-            current->display(); // Use the display method of the Node class
+            temp->display(); // Use the display method of the Node class
             cout << endl; // New line after each text
-            current = current->next;
+            temp = temp->next;
             index++; // Increment index
         }
     }
 
-public:
-    // Constructor
-    TextEditor() : head(nullptr), tail(nullptr) {}
+    // Function to delete text
+    void deleteText(string& text) {
+        if (head == nullptr) {
+            cout << "No text" << endl;
+            return;
+        }
+        if (head->getText() == text) {
+            Node* temp = head;
+            head = head->next;
+            if (head != nullptr) {
+                head->prev = nullptr;
+            }
+            delete temp;
+            cout << "Text deleted." << endl;
+            return;
+        }
+        Node* current = head;
+        Node* prev = nullptr;
+        while (current != nullptr && current->getText() != text) {
+            prev = current;
+            current = current->next;
+        }
+        if (current != nullptr) {
+            prev->next = current->next;
+            if (current->next != nullptr) {
+                current->next->prev = prev;
+            }
+            delete current;
+            cout << "Text removed" << endl;
+        } else {
+            cout << "Text not found" << endl;
+        }
+    }
 
-    // Destructor to free memory
+    // Function to search for text
+    void searchText(string& text) {
+        if (head == nullptr) {
+            cout << "No text" << endl;
+            return;
+        }
+        Node* temp = head;
+        while (temp != nullptr) {
+            if (temp->getText() == text) {
+                cout << "Found: " << text << endl;
+                return;
+            }
+            temp = temp->next;
+        }
+        cout << "Text not found: " << text << endl;
+    }
+
+    // Function to print text in reverse
+    void printReverse() {
+        if (head == nullptr) {
+            cout << "No text to reverse." << endl;
+            return;
+        }
+        cout << "Text in Reverse:" << endl;
+        Node* temp = head;
+        while (temp->next != nullptr) {
+            temp = temp->next;
+        }
+        while (temp != nullptr) {
+            temp->display();
+            cout << endl;
+            temp = temp->prev;
+        }
+    }
+
+    // Destructor to clean up memory
     ~TextEditor() {
         Node* current = head;
         while (current != nullptr) {
@@ -63,82 +158,6 @@ public:
             delete current;
             current = nextNode;
         }
-    }
-
-    // Function to insert text
-    void insertText() {
-        Node* newNode = new Node(); // Create a new node
-        newNode->getData();         // Get text input from user
-        if (head == nullptr) {      // If the list is empty
-            head = newNode;
-            tail = newNode;         // Both head and tail point to the new node
-        } else {
-            tail->next = newNode;   // Append to the end of the list
-            newNode->prev = tail;   // Link the new node's previous pointer
-            tail = newNode;         // Move the tail to the new node
-        }
-        cout << "Inserted: " << newNode->getText() << endl; 
-    }
-
-    // Function to delete text
-    void deleteText( string& text) {
-        Node* current = head;
-        while (current != nullptr) {
-            if (current->getText() == text) { // If text matches
-                if (current->prev) {
-                    current->prev->next = current->next; // Bypass current node
-                } else {
-                    head = current->next; // Move head if deleting the first node
-                }
-                if (current->next) {
-                    current->next->prev = current->prev; // Bypass current node
-                } else {
-                    tail = current->prev; // Move tail if deleting the last node
-                }
-                delete current; // Free memory
-                cout << "Deleted: " << text << endl; // Confirmation message
-                return;
-            }
-            current = current->next; // Move to the next node
-        }
-        cout << "Text not found: " << text << endl; // Not found message
-    }
-
-    // Function to display all text
-    void displayAllText() {
-        cout << "Current Text:" << endl;
-        displayText(); // Call the helper function
-    }
-
-    // Function to search for text
-    void searchText( string& text)  {
-        Node* current = head;
-        while (current != nullptr) {
-            if (current->getText() == text) {
-                cout << "Found: " << text << endl; // If found, print found message
-                return;
-            }
-            current = current->next; // Move to the next node
-        }
-        cout << "Text not found: " << text << endl; // Not found message
-    }
-
-    // Function to print text in reverse
-    void printReverse()  {
-        cout << "Text in Reverse:" << endl;
-        Node* current = tail; // Start from the tail
-        if (current == nullptr) {
-            cout << "List is empty." << endl;
-            return;
-        }
-        while (current != nullptr) {
-            current->display(); // Print the text
-            current = current->prev; // Move to the previous node
-            if (current != nullptr) {
-                cout << " "; // Space between texts
-            }
-        }
-        cout << endl;
     }
 };
 
@@ -161,29 +180,29 @@ int main() {
 
         switch (choice) {
             case 1:
-                editor.insertText(); // Call the insert function
+                editor.insertText();
                 break;
             case 2:
-                cout << "Enter text to delete (single word): ";
-                cin >> text; // Get a single word of text to delete
-                editor.deleteText(text); // Call the delete function
+                cout << "Enter text to delete: ";
+                getline(cin, text); // Use getline to accept text with spaces
+                editor.deleteText(text);
                 break;
             case 3:
-                editor.displayAllText(); // Display all text
+                editor.displayAllText();
                 break;
             case 4:
-                cout << "Enter text to search (single word): ";
-                cin >> text; // Get a single word of text to search
-                editor.searchText(text); // Call the search function
+                cout << "Enter text to search: ";
+                getline(cin, text); // Use getline to accept text with spaces
+                editor.searchText(text);
                 break;
             case 5:
-                editor.printReverse(); // Print text in reverse
+                editor.printReverse();
                 break;
             case 6:
-                cout << "Exiting the program." << endl; // Exit message
+                cout << "Exiting the program." << endl;
                 break;
             default:
-                cout << "Invalid choice. Please try again." << endl; // Invalid input message
+                cout << "Invalid choice. Please try again." << endl;
         }
     } while (choice != 6);
 
