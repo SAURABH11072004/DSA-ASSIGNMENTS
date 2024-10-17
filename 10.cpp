@@ -2,51 +2,50 @@
 #include <string>
 using namespace std;
 
-class JobScheduler; // Forward declaration
+class dequeue; // Forward declaration
 
 class Job {
 private:
     string jobName;
-    int jobPriority;
+    int jobTime;    // Job time in minutes
+    int jobPriority; // Job priority
 
 public:
+    Job* next; // Pointer to the next job
+    Job* prev; // Pointer to the previous job
+
     Job() { // Default constructor
         next = nullptr; // Initialize next to nullptr
         prev = nullptr; // Initialize prev to nullptr
     }
 
-    void setJobName( string& name) {
-        jobName = name;
+    void read() {
+        cout << "Enter job name: ";
+        cin >> jobName;
+        cout << "Enter job time: ";
+        cin >> jobTime; // Read job time as an integer
+        cout << "Enter job priority (integer): ";
+        cin >> jobPriority; // Read job priority
     }
 
-    void setJobPriority(int priority) {
-        jobPriority = priority;
+    void display()  {
+        cout << "Job: " << jobName << ", Time: " << jobTime << " minutes, Priority: " << jobPriority << endl;
     }
 
-    string getJobName()  {
-        return jobName;
-    }
-
-    int getJobPriority()  {
-        return jobPriority;
-    }
-
-    Job* next; // Pointer to the next job
-    Job* prev; // Pointer to the previous job
+    friend class JobScheduler; // Grant JobScheduler access to private members
 };
 
-class JobScheduler {
-private:
-    Job* front; // Front of the deque
-    Job* back;  // Back of the deque
-
+class dequeue {
 public:
-    JobScheduler() { // Constructor
+    Job* front; // Front of the queue
+    Job* back;  // Back of the queue
+
+    dequeue() { // Constructor
         front = nullptr; // Initialize front to nullptr
         back = nullptr;  // Initialize back to nullptr
     }
 
-    ~JobScheduler() {
+    ~ dequeue() {
         while (front) {
             Job* temp = front;
             front = front->next;
@@ -54,60 +53,58 @@ public:
         }
     }
 
-    void addJob() {
-        string name;
-        int priority;
-        cout << "Enter job name: ";
-        cin >> name;
-        cout << "Enter job priority: ";
-        cin >> priority;
-
+    void addJobToFront() {
         Job* newJob = new Job(); // Create a new job
-        newJob->setJobName(name);      // Setting jobName
-        newJob->setJobPriority(priority); // Setting jobPriority
+        newJob->read(); // Read job details
 
-        if (!front) { // Empty deque
-            front = back = newJob;
-            cout << "Job added successfully.\n";
-            return;
-        }
-
-        // Insertion based on priority
-        if (front->getJobPriority() <= priority) {
-            back->next = newJob;
-            newJob->prev = back;
-            back = newJob;
+        if (!front) { // If the queue is empty
+            front = back = newJob; // Set both front and back to new job
         } else {
-            Job* current = front;
-            while (current && current->getJobPriority() > priority) {
-                current = current->next;
-            }
-            if (current) { // Insert in the middle
-                newJob->next = current;
-                newJob->prev = current->prev;
-                if (current->prev) current->prev->next = newJob;
-                current->prev = newJob;
-                if (current == front) front = newJob; // Update front if needed
-            } else { // Insert at the front
-                newJob->next = front;
-                front->prev = newJob;
-                front = newJob;
-            }
+            newJob->next = front; // Link new job to current front
+            front->prev = newJob; // Link current front back to new job
+            front = newJob; // Update front to new job
         }
-        cout << "Job added successfully.\n";
+        cout << "Job added to front successfully.\n";
     }
 
-    void removeJob() {
+    void addJobToBack() {
+        Job* newJob = new Job(); // Create a new job
+        newJob->read(); // Read job details
+
+        if (!back) { // If the queue is empty
+            front = back = newJob; // Set both front and back to new job
+        } else {
+            back->next = newJob; // Link current back to new job
+            newJob->prev = back; // Link new job back to current back
+            back = newJob; // Update back to new job
+        }
+        cout << "Job added to back successfully.\n";
+    }
+
+    void removeJobFromFront() {
         if (!front) {
-            cout << "No jobs to remove.\n";
+            cout << "No jobs to remove from front.\n";
             return;
         }
         Job* temp = front;
-        front = front->next;
-        if (front) front->prev = nullptr;
-        else back = nullptr; // Deque is now empty
-        delete temp;
-        cout << "Job removed successfully.\n";
+        front = front->next; // Move front pointer to the next job
+        if (front) front->prev = nullptr; // Update previous pointer of new front
+        else back = nullptr; // If queue is now empty, update back
+        delete temp; // Delete old front job
+        cout << "Job removed from front successfully.\n";
+    }
+
+    void removeJobFromBack() {
+        if (!back) {
+            cout << "No jobs to remove from back.\n";
+            return;
+        }
+        Job* temp = back;
+        back = back->prev; // Move back pointer to the previous job
+        if (back) back->next = nullptr; // Update next pointer of new back
+        else front = nullptr; // If queue is now empty, update front
+        delete temp; // Delete old back job
+        cout << "Job removed from back successfully.\n";
     }
 
     void displayJobs() const {
@@ -118,62 +115,50 @@ public:
         cout << "Current jobs in the queue:\n";
         Job* current = front;
         while (current) {
-            cout << "Job: " << current->getJobName() << ", Priority: " << current->getJobPriority() << endl;
+            current->display(); // Display job details
             current = current->next;
         }
-    }
-
-    void searchJob() const {
-        string name;
-        cout << "Enter job name to search: ";
-        cin >> name;
-
-        Job* current = front;
-        while (current) {
-            if (current->getJobName() == name) {
-                cout << "Job found: Job: " << current->getJobName() << ", Priority: " << current->getJobPriority() << endl;
-                return;
-            }
-            current = current->next;
-        }
-        cout << "Job not found.\n";
     }
 };
 
 int main() {
-    JobScheduler scheduler;
+    dequeue scheduler;
     int choice;
 
     do {
         cout << "\nJob Scheduling System\n";
-        cout << "1. Add Job\n";
-        cout << "2. Remove Job\n";
-        cout << "3. Display Jobs\n";
-        cout << "4. Search Job\n";
-        cout << "5. Exit\n";
+        cout << "1. Add Job to Front\n";
+        cout << "2. Add Job to Back\n";
+        cout << "3. Remove Job from Front\n";
+        cout << "4. Remove Job from Back\n";
+        cout << "5. Display Jobs\n";
+        cout << "6. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
 
         switch (choice) {
             case 1:
-                scheduler.addJob();
+                scheduler.addJobToFront();
                 break;
             case 2:
-                scheduler.removeJob();
+                scheduler.addJobToBack();
                 break;
             case 3:
-                scheduler.displayJobs();
+                scheduler.removeJobFromFront();
                 break;
             case 4:
-                scheduler.searchJob();
+                scheduler.removeJobFromBack();
                 break;
             case 5:
+                scheduler.displayJobs();
+                break;
+            case 6:
                 cout << "Exiting the system.\n";
                 break;
             default:
                 cout << "Invalid choice. Please try again.\n";
         }
-    } while (choice != 5);
+    } while (choice != 6);
 
     return 0;
-
+}
