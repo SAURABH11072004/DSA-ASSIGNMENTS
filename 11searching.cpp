@@ -10,9 +10,9 @@ public:
     int ID;
     string name;
     int salary;
-    Employee* next; // Pointer to the next employee for chaining
+    bool isOccupied; // To mark if a position in the array is occupied
 
-    Employee() : next(nullptr) {} // Constructor initializing next as nullptr
+    Employee() : isOccupied(false) {} // Constructor initializing isOccupied as false
 
     void read() {
         cout << "Enter the Employee ID: ";
@@ -21,10 +21,11 @@ public:
         cin >> name;
         cout << "Enter the Employee Salary: ";
         cin >> salary;
+        isOccupied = true; // Mark this employee as active
     }
 
     void display() {
-        cout << setw(10) << ID << setw(15) << name << setw(10) << salary << endl;
+        cout << setw(15) << ID << setw(15) << name << setw(10) << salary << endl;
     }
 
     int getID() {
@@ -33,76 +34,72 @@ public:
 };
 
 class HashTable {
-    Employee* HT[SIZE]; // Array of pointers to Employee objects (for chaining)
+    Employee HT[SIZE]; // Array of Employee objects for storing employee data
 
 public:
     HashTable() {
-        // Initialize hash table with null pointers
+        // Initialize hash table with unoccupied employees
         for (int i = 0; i < SIZE; i++) {
-            HT[i] = nullptr;
+            HT[i].isOccupied = false;
         }
     }
 
-    // Insert employee using chaining
+    // Insert employee using linear probing for collision resolution
     void insert() {
-        Employee* newR = new Employee();
-        newR->read();
-        int ID = newR->getID();
+        Employee newEmployee;
+        newEmployee.read();
+        int ID = newEmployee.getID();
         int pos = ID % SIZE; // Hash function
 
-        // Insert employee at the head of the chain (linked list) at position 'pos'
-        if (HT[pos] == nullptr) {
-            HT[pos] = newR;
-        } else {
-            // Collision: insert new employee at the beginning of the linked list
-            newR->next = HT[pos];
-            HT[pos] = newR;
+        // Linear probing: find the next available spot if there's a collision
+        int i = 0;
+        while (HT[(pos + i) % SIZE].isOccupied) {
+            i++;
+            if (i == SIZE) {
+                cout << "Hash table is full. Cannot insert employee.\n";
+                return;
+            }
         }
+
+        HT[(pos + i) % SIZE] = newEmployee;
     }
 
     // Display the entire hash table in table format
     void display() {
         cout << setw(10) << "Hash Index" << setw(15) << "Employee ID" << setw(15) << "Name" << setw(10) << "Salary" << endl;
-        cout << "-------------------------------------------------------------" << endl;
+        cout << "--------------------------------------------------------------" << endl;
 
         for (int i = 0; i < SIZE; i++) {
-            cout << setw(10) << i << setw(15);
-            if (HT[i] == nullptr) {
+            cout << setw(10) << i; // Print hash index
+            if (!HT[i].isOccupied) {
                 // If no employee exists at the hash index, print "-"
                 cout << setw(15) << "-" << setw(15) << "-" << setw(10) << "-" << endl;
             } else {
-                // Display all employees at this hash index
-                Employee* temp = HT[i];
-                while (temp != nullptr) {
-                    cout << setw(10) << temp->ID << setw(15) << temp->name << setw(10) << temp->salary << endl;
-                    temp = temp->next;
-                    if (temp != nullptr) {
-                        cout << setw(10) << " "; // Adding extra spacing for additional employees in the same hash index
-                    }
-                }
+                // Display the employee details
+                HT[i].display();
             }
         }
     }
 
-    // Searching for an employee by ID
+    // Searching for an employee by ID using linear probing
     void search(int searchID) {
         int pos = searchID % SIZE;
-        Employee* temp = HT[pos];
-        bool found = false;
+        int i = 0;
 
-        while (temp != nullptr) {
-            if (temp->getID() == searchID) {
-                cout << "Employee found at hash index " << pos << ": ";
-                temp->display();
-                found = true;
-                break;
+        // Linear probing: search through the table
+        while (HT[(pos + i) % SIZE].isOccupied) {
+            if (HT[(pos + i) % SIZE].getID() == searchID) {
+                cout << "Employee found at hash index " << (pos + i) % SIZE << ": ";
+                HT[(pos + i) % SIZE].display();
+                return;
             }
-            temp = temp->next;
+            i++;
+            if (i == SIZE) {
+                break; // If searched through the entire table, exit loop
+            }
         }
 
-        if (!found) {
-            cout << "Employee with ID " << searchID << " not found." << endl;
-        }
+        cout << "Employee with ID " << searchID << " not found." << endl;
     }
 };
 
