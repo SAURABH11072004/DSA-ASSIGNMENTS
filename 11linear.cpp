@@ -1,37 +1,38 @@
 #include <iostream>
 #include <string>
-#include <iomanip> // For formatted output using setw and other manipulators
+#include <iomanip>
 using namespace std;
 
-#define TABLE_SIZE 10 // Fixed size of the hash table
+#define INITIAL_SIZE 10   // Initial size of the hash table
 
 // Employee class to hold individual employee data
 class Employee {
-public:
-    int ID;                // Employee ID
+private:
+    int id;                // Employee ID
     string name;           // Employee name
     int salary;            // Employee salary
     bool isOccupied;       // Status flag to check if the slot is occupied
     int chainIndex;        // Chain index for resolving collisions
 
+public:
     // Default constructor to initialize attributes
-    Employee() : ID(-1), salary(0), isOccupied(false), chainIndex(-1) {}
+    Employee() : id(-1), salary(0), isOccupied(false), chainIndex(-1) {}
 
     // Reads employee data from user input
     void read() {
         cout << "Enter the Employee ID: ";
-        cin >> ID;
+        cin >> id;
         cout << "Enter the Employee Name: ";
-        cin.ignore(); // To ignore the newline character in the input buffer
+        cin.ignore();   // To ignore the newline character in the input buffer
         getline(cin, name);
         cout << "Enter the Employee Salary: ";
         cin >> salary;
-        isOccupied = true; // Mark slot as occupied after input
+        isOccupied = true;  // Mark slot as occupied after input
     }
 
     // Displays employee details
-    void display() {
-        cout << setw(15) << ID << setw(15) << name << setw(10) << salary;
+    void display() const {
+        cout << setw(15) << id << setw(15) << name << setw(10) << salary;
         if (chainIndex != -1) {
             cout << setw(15) << chainIndex << endl;
         } else {
@@ -39,62 +40,77 @@ public:
         }
     }
 
-    // Returns the employee ID
-    int getID() {
-        return ID;
-    }
+    // Accessor functions for data members
+    int getId() const { return id; }
+    string getName() const { return name; }
+    int getSalary() const { return salary; }
+    bool isSlotOccupied() const { return isOccupied; }
+    int getChainIndex() const { return chainIndex; }
+    void setChainIndex(int index) { chainIndex = index; }
 };
 
 // HashTable class to manage a table of Employee records
 class HashTable {
-    Employee HT[TABLE_SIZE]; // Fixed-size hash table array
+private:
+    Employee* HT;           // Array to hold employees
+    int currentSize;        // Current number of entries in the hash table
+    int tableSize;          // Maximum number of slots in the hash table
 
     // Hash function to compute hash index based on employee ID
-    int hashFunction(int key) {
-        return key % TABLE_SIZE;
+    int hashFunction(int key) const {
+        return key % tableSize;
     }
 
 public:
-    // Insert an employee into the hash table
-    void insert() {
-        Employee newEmployee;
-        newEmployee.read();
-        int ID = newEmployee.getID();
-        int pos = hashFunction(ID);
+    // Constructor initializes the hash table with a given size
+    HashTable(int size = INITIAL_SIZE) : tableSize(size), currentSize(0) {
+        HT = new Employee[tableSize];
+    }
 
-        // Handle collisions using linear probing
+    // Destructor to free memory allocated to the hash table
+    ~HashTable() {
+        delete[] HT;
+    }
+
+    // Insert an employee into the hash table, handling collisions with linear probing
+    void insert(Employee& newEmployee) {
+        int id = newEmployee.getId();
+        int pos = hashFunction(id);
+
+        // Use linear probing to find an available spot in case of a collision
         int i = 0;
         int prevPos = -1;
-        while (HT[(pos + i) % TABLE_SIZE].isOccupied) {
-            prevPos = (pos + i) % TABLE_SIZE; // Store the last occupied position
+        while (HT[(pos + i) % tableSize].isSlotOccupied()) {
+            prevPos = (pos + i) % tableSize;  // Store last occupied position
             i++;
-            if (i == TABLE_SIZE) { // Table is full
+            if (i == tableSize) {   // Table is full, cannot insert
                 cout << "Error: Table is full, unable to insert employee.\n";
                 return;
             }
         }
 
-        int finalPos = (pos + i) % TABLE_SIZE; // Final position for the new employee
+        int finalPos = (pos + i) % tableSize;   // Final position for new employee
         HT[finalPos] = newEmployee;
 
-        // Update chain index for the previous position if there was a collision
+        // Update chain index for previous position if there was a collision
         if (prevPos != -1) {
-            HT[prevPos].chainIndex = finalPos;
+            HT[prevPos].setChainIndex(finalPos);
         }
 
-        cout << "Employee inserted successfully.\n";
+        currentSize++;
     }
 
-    // Display the hash table
-    void display() {
+    // Display function to print out the entire hash table with chaining index
+    void display() const {
         cout << setw(10) << "Hash Index" << setw(15) << "Employee ID" << setw(15) << "Name"
              << setw(10) << "Salary" << setw(15) << "Chaining Index" << endl;
         cout << "-------------------------------------------------------------------------" << endl;
 
-        for (int i = 0; i < TABLE_SIZE; i++) {
+        // Loop through the table and display each employee record
+        for (int i = 0; i < tableSize; i++) {
             cout << setw(10) << i;
-            if (!HT[i].isOccupied) {
-                // Display placeholder for empty slots
+            if (!HT[i].isSlotOccupied()) {
+                // Display placeholder if the slot is empty
                 cout << setw(15) << "-" << setw(15) << "-" << setw(10) << "-" << setw(15) << "-" << endl;
             } else {
                 HT[i].display();
@@ -102,28 +118,28 @@ public:
         }
     }
 
-    // Search for an employee by ID
-    void search(int searchID) {
-        int pos = hashFunction(searchID);
+    // Search function to find an employee by ID, using linear probing
+    void search(int searchID) const {
+        int pos = hashFunction(searchID);   // Initial position based on hash
         int i = 0;
 
         // Search until the slot is unoccupied or the employee is found
-        while (HT[(pos + i) % TABLE_SIZE].isOccupied) {
-            if (HT[(pos + i) % TABLE_SIZE].getID() == searchID) {
-                cout << "Employee found at location " << (pos + i) % TABLE_SIZE << endl;
+        while (HT[(pos + i) % tableSize].isSlotOccupied()) {
+            if (HT[(pos + i) % tableSize].getId() == searchID) {
+                cout << "Employee found at location " << (pos + i) % tableSize << endl;
                 return;
             }
             i++;
-            if (i == TABLE_SIZE) { // Entire table has been searched
+            if (i == tableSize) {   // Break if the entire table has been searched
                 break;
             }
         }
-        cout << "Employee with ID " << searchID << " not found.\n";
+        cout << "Employee with ID " << searchID << " not found." << endl;
     }
 };
 
 int main() {
-    HashTable ht; // Create hash table object
+    HashTable ht;   // Create hash table object
     int choice, searchID;
 
     // Display menu options until the user exits
@@ -134,15 +150,19 @@ int main() {
 
         switch (choice) {
         case 1:
-            ht.insert(); // Insert employee details
+            {
+                Employee newEmployee;
+                newEmployee.read();
+                ht.insert(newEmployee);  // Insert employee details
+            }
             break;
         case 2:
-            ht.display(); // Display the hash table
+            ht.display();  // Display entire hash table
             break;
         case 3:
             cout << "Enter Employee ID to search: ";
             cin >> searchID;
-            ht.search(searchID); // Search employee by ID
+            ht.search(searchID);  // Search employee by ID
             break;
         case 4:
             cout << "Exiting...\n";
