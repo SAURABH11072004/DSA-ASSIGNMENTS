@@ -50,10 +50,10 @@ class node
         }
     }
 int getmax(node aa[], int n) {
-        int max = aa[0].roll;
+        int max = aa[0].cgpa;
         for (int i = 1; i < n; i++) {
-            if (aa[i].roll > max) {
-                max = aa[i].roll;
+            if (aa[i].cgpa > max) {
+                max = aa[i].cgpa;
             }
         }
         return max;
@@ -85,7 +85,7 @@ int getmax(node aa[], int n) {
 
         // Build the sorted array
         for (int i = n - 1; i >= 0; i--) {
-            int digit = (aa[i].roll / pos) % 10;
+            int digit = (aa[i].cgpa / pos) % 10;
           
            b[--count[digit]]=aa[i];
 
